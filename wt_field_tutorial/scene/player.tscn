@@ -376,6 +376,7 @@ animations = [{
 }]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_acav1"]
+radius = 6.0
 
 [node name="Player" type="CharacterBody2D" unique_id=1561738654]
 script = ExtResource("1_fvtld")
@@ -389,7 +390,7 @@ autoplay = "normal_right"
 visible = false
 sprite_frames = SubResource("SpriteFrames_1yrng")
 autoplay = "default"
-frame_progress = 0.0002573882
+frame_progress = 0.12324654
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=719713263]
 shape = SubResource("CircleShape2D_acav1")

@@ -8,16 +8,23 @@
 texture = ExtResource("1_5kiuu")
 0:0/0 = 0
 1:0/0 = 0
+1:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 2:0/0 = 0
+2:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 0:1/0 = 0
+0:1/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 1:1/0 = 0
 2:1/0 = 0
 0:2/0 = 0
+0:2/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 1:2/0 = 0
 2:2/0 = 0
 3:2/0 = 0
+3:2/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 2:3/0 = 0
+2:3/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 3:3/0 = 0
+3:3/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_33cqm"]
 texture = ExtResource("2_dbls1")
@@ -28,6 +35,7 @@ texture = ExtResource("2_dbls1")
 0:2/animation_frame_2/duration = 1.0
 0:2/animation_frame_3/duration = 1.0
 0:2/0 = 0
+0:2/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 0:3/animation_speed = 8.0
 0:3/animation_mode = 1
 0:3/animation_frame_0/duration = 1.0
@@ -35,6 +43,7 @@ texture = ExtResource("2_dbls1")
 0:3/animation_frame_2/duration = 1.0
 0:3/animation_frame_3/duration = 1.0
 0:3/0 = 0
+0:3/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 0:4/animation_speed = 8.0
 0:4/animation_mode = 1
 0:4/animation_frame_0/duration = 1.0
@@ -42,14 +51,17 @@ texture = ExtResource("2_dbls1")
 0:4/animation_frame_2/duration = 1.0
 0:4/animation_frame_3/duration = 1.0
 0:4/0 = 0
+0:4/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 0:5/animation_speed = 8.0
 0:5/animation_frame_0/duration = 1.0
 0:5/animation_frame_1/duration = 1.0
 0:5/animation_frame_2/duration = 1.0
 0:5/animation_frame_3/duration = 1.0
 0:5/0 = 0
+0:5/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 
 [sub_resource type="TileSet" id="TileSet_33cqm"]
+physics_layer_0/collision_layer = 1
 sources/0 = SubResource("TileSetAtlasSource_dbls1")
 sources/1 = SubResource("TileSetAtlasSource_33cqm")
 
@@ -65,6 +77,18 @@ texture_region_size = Vector2i(16, 32)
 
 [sub_resource type="TileSet" id="TileSet_p1ry8"]
 sources/0 = SubResource("TileSetAtlasSource_xwcet")
+
+[sub_resource type="SegmentShape2D" id="SegmentShape2D_33cqm"]
+b = Vector2(256, 0)
+
+[sub_resource type="SegmentShape2D" id="SegmentShape2D_xwcet"]
+b = Vector2(0, 256)
+
+[sub_resource type="SegmentShape2D" id="SegmentShape2D_p1ry8"]
+b = Vector2(256, 0)
+
+[sub_resource type="SegmentShape2D" id="SegmentShape2D_xlg7c"]
+b = Vector2(0, 256)
 
 [node name="Game" type="Node2D" unique_id=211365794]
 
@@ -82,3 +106,27 @@ zoom = Vector2(2, 2)
 
 [node name="Player" parent="." unique_id=1561738654 instance=ExtResource("3_33cqm")]
 position = Vector2(32, 136)
+
+[node name="WorldBounds" type="Node2D" parent="." unique_id=1125892885]
+
+[node name="TopBoundary" type="StaticBody2D" parent="WorldBounds" unique_id=1741009913]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WorldBounds/TopBoundary" unique_id=1019565283]
+shape = SubResource("SegmentShape2D_33cqm")
+
+[node name="LeftBoundary" type="StaticBody2D" parent="WorldBounds" unique_id=531911981]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WorldBounds/LeftBoundary" unique_id=318240170]
+shape = SubResource("SegmentShape2D_xwcet")
+
+[node name="DownBoundary" type="StaticBody2D" parent="WorldBounds" unique_id=758755855]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WorldBounds/DownBoundary" unique_id=1746841877]
+position = Vector2(0, 256)
+shape = SubResource("SegmentShape2D_p1ry8")
+
+[node name="StaticBody2D" type="StaticBody2D" parent="WorldBounds" unique_id=1133245690]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WorldBounds/StaticBody2D" unique_id=175226906]
+position = Vector2(256, 0)
+shape = SubResource("SegmentShape2D_xlg7c")
