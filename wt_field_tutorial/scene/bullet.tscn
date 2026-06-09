@@ -11,6 +11,7 @@ region = Rect2(22, 23, 4, 4)
 radius = 3.0
 
 [node name="Bullet" type="Area2D" unique_id=1435861483]
+collision_layer = 16
 script = ExtResource("1_xw300")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=995269722]

@@ -105,7 +105,7 @@ offset = Vector2(128, 128)
 zoom = Vector2(2, 2)
 
 [node name="Player" parent="." unique_id=1561738654 instance=ExtResource("3_33cqm")]
-position = Vector2(32, 136)
+position = Vector2(108, 93)
 
 [node name="WorldBounds" type="Node2D" parent="." unique_id=1125892885]
 
