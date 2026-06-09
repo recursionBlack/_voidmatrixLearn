@@ -390,7 +390,9 @@ autoplay = "normal_right"
 visible = false
 sprite_frames = SubResource("SpriteFrames_1yrng")
 autoplay = "default"
-frame_progress = 0.12324654
+frame_progress = 0.739418
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=719713263]
 shape = SubResource("CircleShape2D_acav1")
+
+[node name="ShootingTimer" type="Timer" parent="." unique_id=1979573504]
