@@ -33,7 +33,7 @@ enum EnemyType {
 # 敌人死亡时默认播放的动画名
 @export var death_animation_name: StringName = &"death"
 # 爆炸特效默认播放的动画名
-@export var exlosion_animation_name: StringName = &"explode"
+@export var explosion_animation_name: StringName = &"explode"
 
 
 @export_group("死亡效果")

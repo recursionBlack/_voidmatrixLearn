@@ -2,7 +2,15 @@
 
 [ext_resource type="Script" uid="uid://c25wdedyoa25u" path="res://scene/player.gd" id="1_fvtld"]
 [ext_resource type="Texture2D" uid="uid://dvv2vh7fryqt5" path="res://resources/texture/W.png" id="1_hjaqi"]
+[ext_resource type="Shader" uid="uid://cxca0il235xav" path="res://scene/blink.gdshader" id="2_ct4mp"]
 [ext_resource type="Texture2D" uid="uid://bbkpnwft4s6av" path="res://resources/texture/浮游炮.png" id="2_fvtld"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_s4jxa"]
+resource_local_to_scene = true
+shader = ExtResource("2_ct4mp")
+shader_parameter/blink_enabled = false
+shader_parameter/blink_speed = 12.0
+shader_parameter/hidden_ratio = 0.5
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ct4mp"]
 atlas = ExtResource("1_hjaqi")
@@ -383,6 +391,7 @@ collision_layer = 2
 script = ExtResource("1_fvtld")
 
 [node name="BodySprite" type="AnimatedSprite2D" parent="." unique_id=225019957]
+material = SubResource("ShaderMaterial_s4jxa")
 sprite_frames = SubResource("SpriteFrames_8rkx0")
 animation = &"armed_right"
 autoplay = "normal_right"

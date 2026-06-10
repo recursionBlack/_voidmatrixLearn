@@ -175,7 +175,7 @@ func _on_touch_damage_area_body_entered(body: Node2D) -> void:
 # 玩家离开区域后，停止持续伤害
 func _on_touch_damage_area_body_exited(body: Node2D) -> void:
 	if body == touched_player:
-		touched_player == null
+		touched_player = null
 
 
 # 子弹进入接触区域时，对敌人造成固定伤害并销毁子弹
@@ -228,7 +228,7 @@ func _update_hurt_blink(delta: float) -> void:
 		return
 	
 	hurt_blink_time_left = maxf(hurt_blink_time_left - delta, 0.0)
-	if hurt_blink_time_left > 0:
+	if hurt_blink_time_left > 0.0:
 		return
 	
 	_set_hurt_blink_enabled(false)
@@ -301,6 +301,8 @@ func _play_death_sequence_animation(animation_name: StringName, stage: DeathSequ
 	
 	if config == null:
 		return false
+	if config.enemy_frames == null:
+		return false
 	if not config.enemy_frames.has_animation(animation_name):
 		return false
 	
@@ -318,7 +320,11 @@ func _should_play_explosion_sequence() -> bool:
 func _try_apply_explosion_damage() -> void:
 	if config == null:
 		return
+	if not config.explode_on_death:
+		return
 	if not config.explosion_damage <= 0 or config.explosion_radius <= 0.0:
+		return
+	if explosion_shape.shape == null:
 		return
 	
 	var space_state := get_world_2d().direct_space_state
@@ -357,6 +363,7 @@ func _try_apply_explosion_damage() -> void:
 		var hit_player := collider as Player
 		if hit_player != null:
 			hit_player.apply_damage(config.explosion_damage)
+			continue
 		
 		var hit_enemy := collider as Enemy
 		if hit_enemy != null:

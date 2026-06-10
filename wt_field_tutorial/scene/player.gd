@@ -8,6 +8,8 @@ const ARMED_ANIMATION_PREFIX := &"armed"
 const DEFAULT_MOVE_SPEED_MULTIPLIER := 1.0
 const DEFAULT_FIRE_RATE_MULTIPLIER := 1.0
 const SPIRAL_PHASE_STEP := PI / 12
+const BLINK_ENABLED_SHADER_PARAMETER := &"blink_enabled"
+const WORLD_COLLISION_MASK := 1
 
 # 角色动画节点，负责播放四方向移动动画
 @onready var body_sprite: AnimatedSprite2D = $BodySprite
@@ -40,6 +42,18 @@ var spiral_phase: float = 0.0
 
 # 玩家移速属性，单位是像素/秒
 @export var move_speed:float = 120.0
+# 玩家最大生命值
+@export var max_health: int = 5
+# 受伤后进入无敌闪烁的持续时间
+@export var invincibility_duration: float = 1.0
+
+# 玩家当前生命值，由最大生命值初始化
+var current_health: int = 0
+# 无敌剩余时间，大于 0 时忽略新的受伤请求
+var invincibility_time_left: float = 0.0
+# 玩家死亡后停止移动和攻击
+var is_dead: bool = false
+
 
 # 连续开火的最短时间间隔
 @export var fire_interval: float = 0.18
@@ -48,13 +62,20 @@ var spiral_phase: float = 0.0
 
 
 func _ready() -> void:
+	current_health = maxi(max_health, 1)
 	shooting_timer.one_shot = true
 	shooting_timer.wait_time = _get_effective_fire_interval()
+	_set_hurt_blink_enabled(false)
 	_update_animation()
 	_update_armed_effect()
 
 func _physics_process(delta: float) -> void:
+	_update_invincibility(delta)
 	_update_pickup_effects(delta)
+	
+	if is_dead:
+		velocity = Vector2.ZERO
+		return
 	
 	# 读取四个方向，并得到标准化后八向输入向量
 	var move_input := Input.get_vector("move_left","move_right","move_up","move_down")
@@ -107,9 +128,8 @@ func _try_shoot(shoot_input: Vector2) -> void:
 		return
 	
 	var shoot_direction := shoot_input.normalized()
-	var has_spawned_bullet := _fire_bullets(shoot_direction)
-	if has_spawned_bullet:
-		shooting_timer.start(_get_effective_fire_interval())
+	_fire_bullets(shoot_direction)
+	shooting_timer.start(_get_effective_fire_interval())
 	
 	
 # 道具统一通过这个入口影响玩家，Pickup 场景不直接改玩家内部细节
@@ -157,6 +177,30 @@ func apply_pickup(config: PickupConfig) -> bool:
 	
 	return applied
 
+
+# 敌人或其他伤害来源统一通过这个入口让玩家受伤
+func apply_damage(amount: int) -> bool:
+	if is_dead:
+		return false
+	if amount <= 0:
+		return false
+	if invincibility_time_left > 0.0:
+		return false
+	
+	current_health = maxi(current_health - amount, 0)
+	if current_health <= 0:
+		_die()
+		return true
+	
+	_start_invincibility()
+	return true
+
+
+# 获取玩家当前生命值
+func get_current_health() -> int:
+	return current_health
+
+
 # 根据当前弹幕模式发射子弹，并返回这次是否至少成功了一枚子弹
 func _fire_bullets(base_direction:Vector2) -> bool:
 	if current_shot_pattern == PickupConfig.ShotPattern.SPIRAL:
@@ -169,6 +213,9 @@ func _fire_bullets(base_direction:Vector2) -> bool:
 
 # 实例化并生成一枚子弹
 func _spawn_bullet(shoot_direction:Vector2) -> bool:
+	if not _can_spawn_bullet(shoot_direction):
+		return false
+	
 	var bullet := BULLET_SCENE.instantiate() as Bullet
 	if bullet == null:
 		return false
@@ -184,16 +231,36 @@ func _spawn_bullet(shoot_direction:Vector2) -> bool:
 	spawn_parent.add_child(bullet)
 	bullet.global_position = global_position + shoot_direction * bullet_spawn_distance
 	return true
+
+
+# 发射前先检查从玩家中心到子弹出生点的路径是否被世界碰撞遮挡住
+func _can_spawn_bullet(shoot_direction: Vector2) -> bool:
+	var spawn_positon := global_position + shoot_direction * bullet_spawn_distance
+	var space_state := get_world_2d().direct_space_state
+	if space_state == null:
+		return true
 	
+	var query := PhysicsRayQueryParameters2D.create(
+		global_position,
+		spawn_positon,
+		WORLD_COLLISION_MASK
+	)
+	query.collide_with_bodies = true
+	query.collide_with_areas = false
+	query.exclude = [get_rid()]
+	
+	var hit_results: Dictionary = space_state.intersect_ray(query)
+	return hit_results.is_empty()
+
+
 # 螺旋形态下自动固定节奏朝 360 度方向旋转发射
 func _try_auto_spiral_shoot() -> void:
 	if not shooting_timer.is_stopped():
 		return
 	
 	var spiral_direction := Vector2.RIGHT.rotated(spiral_phase)
-	var has_spawned_bullet := _fire_bullets(spiral_direction)
-	if has_spawned_bullet:
-		shooting_timer.start(_get_effective_fire_interval())
+	_fire_bullets(spiral_direction)
+	shooting_timer.start(_get_effective_fire_interval())
 
 
 # 每帧更新道具 Buff 剩余时间，并在到期后恢复默认状态
@@ -217,6 +284,19 @@ func _update_pickup_effects(delta:float) -> void:
 			form_fire_rate_multiplier = DEFAULT_FIRE_RATE_MULTIPLIER
 			spiral_phase = 0.0
 			_refresh_shooting_timer_wait_time()
+
+
+# 更新玩家无敌时间，并在结束时关闭闪烁效果
+func _update_invincibility(delta: float) -> void:
+	if invincibility_time_left <= 0.0:
+		return
+	
+	invincibility_time_left = maxf(invincibility_time_left - delta, 0)
+	if invincibility_time_left > 0.0:
+		return
+	
+	_set_hurt_blink_enabled(false)
+
 
 func _get_effective_move_speed() -> float:
 	return move_speed * current_move_speed_multiplier
@@ -253,6 +333,31 @@ func _refresh_shooting_timer_wait_time() -> void:
 		return
 	
 	shooting_timer.start(new_interval)
+
+
+# 开启玩家受伤后的无敌闪烁状态
+func _start_invincibility() -> void:
+	invincibility_time_left = maxf(invincibility_duration, 0.0)
+	_set_hurt_blink_enabled(invincibility_time_left > 0.0)
+
+
+# 统一设置玩家受伤闪烁开关，便于后续与其他逻辑解耦
+func _set_hurt_blink_enabled(enabled: bool) -> void:
+	var sprite_material := body_sprite.material as ShaderMaterial
+	if sprite_material != null:
+		sprite_material.set_shader_parameter(BLINK_ENABLED_SHADER_PARAMETER, enabled)
+
+
+# 玩家生命值归零时进入死亡状态
+func _die() -> void:
+	is_dead = true
+	velocity = Vector2.ZERO
+	invincibility_time_left = 0.0
+	_set_hurt_blink_enabled(false)
+	shooting_timer.stop()
+	armed_effect_sprite.visible = false
+	armed_effect_sprite.stop()
+
 
 # 根据当前形态选择对应的动画前缀
 func _get_animation_prefix() -> StringName:
