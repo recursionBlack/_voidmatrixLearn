@@ -1,0 +1,45 @@
+[gd_scene format=3 uid="uid://drje7kqh6owyx"]
+
+[ext_resource type="Shader" uid="uid://cxca0il235xav" path="res://scene/blink.gdshader" id="1_h08p8"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_f87vc"]
+resource_local_to_scene = true
+shader = ExtResource("1_h08p8")
+shader_parameter/blink_enabled = false
+shader_parameter/blink_speed = 12.0
+shader_parameter/hidden_ratio = 0.5
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_vufel"]
+resource_local_to_scene = true
+radius = 4.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_h08p8"]
+resource_local_to_scene = true
+radius = 6.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_f87vc"]
+resource_local_to_scene = true
+radius = 8.0
+
+[node name="Enemy" type="CharacterBody2D" unique_id=904015557]
+collision_layer = 4
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=423853618]
+material = SubResource("ShaderMaterial_f87vc")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1343732240]
+shape = SubResource("CircleShape2D_vufel")
+
+[node name="TouchDamageArea" type="Area2D" parent="." unique_id=522653270]
+collision_layer = 8
+collision_mask = 18
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="TouchDamageArea" unique_id=91476217]
+shape = SubResource("CircleShape2D_h08p8")
+
+[node name="ExplosionArea" type="Area2D" parent="." unique_id=2091773252]
+collision_layer = 64
+collision_mask = 6
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExplosionArea" unique_id=1695893195]
+shape = SubResource("CircleShape2D_f87vc")
