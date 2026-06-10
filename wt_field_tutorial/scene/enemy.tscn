@@ -1,5 +1,6 @@
 [gd_scene format=3 uid="uid://drje7kqh6owyx"]
 
+[ext_resource type="Script" uid="uid://be7excfcbmsuy" path="res://scene/enemy.gd" id="1_f87vc"]
 [ext_resource type="Shader" uid="uid://cxca0il235xav" path="res://scene/blink.gdshader" id="1_h08p8"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_f87vc"]
@@ -23,6 +24,7 @@ radius = 8.0
 
 [node name="Enemy" type="CharacterBody2D" unique_id=904015557]
 collision_layer = 4
+script = ExtResource("1_f87vc")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=423853618]
 material = SubResource("ShaderMaterial_f87vc")
